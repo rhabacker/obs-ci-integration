@@ -1,0 +1,37 @@
+#!/bin/sh
+
+# 
+# trigger obs if git commit id changes
+#
+# @author Ralf Habacker <ralf.habacker@freenet.de>
+#
+trigger_obs() {
+    for token in $*; do
+        echo curl -H "Authorization: Token $token" -X POST https://api.opensuse.org/trigger/runservice
+    done
+}
+
+url=git@invent.kde.org:office/kmymoney.git
+branch=5.1
+obstokens="oHiZhSU4C14rfH1bpUyKYuob drFde2RvCUhsCDZ4Yg1wL45N"
+
+id=$(git ls-remote $url refs/heads/$branch | sed 's,\s.*$,,g')
+
+file=/tmp/$(basename $0)-$(echo $url-$branch | sed 's,[/:@],-,g')
+
+oldid=
+if ! test -f "$file"; then
+    echo $id > "$file"
+    trigger_obs $obstokens
+    exit 0
+fi
+
+oldid=$(cat "$file")
+
+if test "$id" == "$oldid"; then
+    exit 0
+fi 
+
+trigger_obs $obstokens
+echo $id > "$file"
+exit 0
