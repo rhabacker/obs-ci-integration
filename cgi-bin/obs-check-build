@@ -1,0 +1,16 @@
+#!/bin/sh -x
+#
+# @author Ralf Habacker <ralf.habacker@freenet.de>
+#
+
+. /srv/www/obs-ci-integration/lib.sh
+
+#echo got project "$project" revision "$revision" job: "$job"
+
+o=$($osc results $obsroot $pkgname:$subpkg -r $obsrepo | gawk '{ print $3}')
+echo $o
+if test -z "$o" || test "$o" == "failed*"; then
+    exit 1
+else
+    exit 0
+fi

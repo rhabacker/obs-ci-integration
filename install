@@ -1,0 +1,23 @@
+#!/bin/sh
+
+dest=/srv/www/obs-ci-integration/
+
+# config
+if ! test -f /etc/sysconfig/obs-ci-integration.conf; then
+    cp -v sysconfig/obs-ci-integration.conf /etc/sysconfig/obs-ci-integration.conf
+fi
+
+if ! test -f /etc/apache2/vhosts.d/obs-ci-integration.conf; then
+    ln -s $PWD/conf/obs-ci-integration.conf /etc/apache2/vhosts.d/obs-ci-integration.conf
+fi
+
+# app
+mkdir -p $dest/cgi-bin
+cp cgi-bin/* $dest/cgi-bin
+
+# library
+cp lib.sh $dest
+
+mkdir -p $dest/htdocs
+cp -a htdocs/* $dest/htdocs
+

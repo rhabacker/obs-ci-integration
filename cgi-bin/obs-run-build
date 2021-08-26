@@ -1,0 +1,43 @@
+#!/bin/sh -x
+#
+# @author Ralf Habacker <ralf.habacker@freenet.de>
+#
+
+. /srv/www/obs-ci-integration/lib.sh
+
+function create_package {
+    pkgname=$1
+    $osc branch -m "" $obsroot $template $obsroot $pkgname
+    tmp=/tmp/run-obs-build.$$
+    mkdir $tmp
+    cd $tmp
+    sleep 1
+    $osc co $obsroot $pkgname
+    cd $obsroot/$pkgname
+    sed -i "s,@REPO@,$repo,g;s,@REVISION@,$revision,g" _service.template
+    $osc mv _service.template _service
+    cat _service
+    $osc ci -m "add job '$job' for revision '$revision'"
+    cd /tmp
+    rm -rf $tmp
+    echo "created package $pkgname at https://build.opensuse.org/package/show/$obsroot/$pkgnameand triggered build"
+}
+
+echo got project "$project" revision "$revision" job: "$job"
+
+found=0
+for i in $($osc ls $obsroot); do
+    n=$(echo $i | grep $pkgname)
+    if test -n "$n"; then
+        $osc rebuild $obsroot $pkgname --multibuild-package=$subpkg
+        echo "triggered build of $i"
+        found=1
+    fi
+    #echo $i
+done
+
+if test "$found" -eq "0"; then
+    create_package $pkgname
+fi
+
+exit 0

@@ -1,0 +1,12 @@
+#!/bin/sh -x
+#
+# @author Ralf Habacker <ralf.habacker@freenet.de>
+#
+
+. /srv/www/obs-ci-integration/lib.sh
+
+echo got project "$project" revision "$revision" job: "$job"
+
+echo $osc remotebuildlog $obsroot $pkgname:$subpkg $obsrepo $arch
+
+$osc remotebuildlog $obsroot $pkgname:$subpkg $obsrepo $arch
