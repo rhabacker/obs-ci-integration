@@ -5,7 +5,7 @@
 #
 
 if test -z "$1"; then
-    echo $0 [--dry-run] <grep-like-pattern-in-osc-token-list>
+    echo "$0 [--dry-run] <grep-like-pattern-in-osc-token-list>"
     exit 1
 fi
 
