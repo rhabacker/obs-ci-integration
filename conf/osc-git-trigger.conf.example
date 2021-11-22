@@ -1,0 +1,3 @@
+
+# url=<git-repo-url>;branch=<git-branch>;obstokens="<token1> [<token2> ...]"
+url=git@invent.kde.org:office/kmymoney.git;branch=5.1;obstokens="xxx yyy"

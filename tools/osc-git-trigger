@@ -5,34 +5,66 @@
 #
 # @author Ralf Habacker <ralf.habacker@freenet.de>
 #
+
+r=$(realpath $0)
+r=$(dirname $r)
+bn=$(basename $0)
+
 trigger_obs() {
     for token in $*; do
-        curl -H "Authorization: Token $token" -X POST https://api.opensuse.org/trigger/runservice
+        $run curl -H "Authorization: Token $token" -X POST https://api.opensuse.org/trigger/runservice
     done
 }
 
-url=git@invent.kde.org:office/kmymoney.git
-branch=5.1
-# windows:mingw:winxx:snapshots/mingwxx-kmymone5
-obstokens="oHiZhSU4C14rfH1bpUyKYuob drFde2RvCUhsCDZ4Yg1wL45N"
+file_name() {
+    echo /tmp/$bn-$(echo $url-$branch | sed 's,[/:@],-,g')
+}
 
-id=$(git ls-remote $url refs/heads/$branch | sed 's,\s.*$,,g')
+check_package() {
+    url=$1
+    branch=$2
+    obstoken=$3
+    id=$(git ls-remote $url refs/heads/$branch | sed 's,\s.*$,,g')
+    file=$(file_name)
+    oldid=
+    if ! test -f "$file"; then
+        echo $id > "$file"
+        trigger_obs $obstokens
+        return
+    fi
 
-file=/tmp/$(basename $0)-$(echo $url-$branch | sed 's,[/:@],-,g')
+    oldid=$(cat "$file")
 
-oldid=
-if ! test -f "$file"; then
-    echo $id > "$file"
+    if test "$id" == "$oldid"; then
+        return
+    fi 
     trigger_obs $obstokens
-    exit 0
-fi
+    echo $id > "$file"
+}
 
-oldid=$(cat "$file")
+run=
+clean=0
 
-if test "$id" == "$oldid"; then
-    exit 0
-fi 
+for arg in "$@"
+do
+    case "$arg" in
+        --dry-run)
+            run=echo
+            ;;
+        --clean)
+            clean=1
+            ;;
+    esac
+done
 
-trigger_obs $obstokens
-echo $id > "$file"
-exit 0
+while read i; do
+    url=""
+    eval "$i"
+    if test -n "$url"; then
+        if test "$clean" -eq 1; then
+            rm -f $(file_name)
+        else
+            check_package $url $branch "$obstokens"
+        fi
+    fi
+done < $r/../conf/$bn.conf
