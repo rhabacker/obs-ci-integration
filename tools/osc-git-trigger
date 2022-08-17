@@ -12,7 +12,7 @@ bn=$(basename $0)
 
 trigger_obs() {
     for token in $*; do
-        $run curl -H "Authorization: Token $token" -X POST https://api.opensuse.org/trigger/runservice
+        $run curl -s -H "Authorization: Token $token" -X POST https://api.opensuse.org/trigger/runservice
     done
 }
 
