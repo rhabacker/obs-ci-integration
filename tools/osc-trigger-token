@@ -4,16 +4,17 @@
 # trigger osc token by grep like pattern
 #
 
-if test -z "$1"; then
-    echo "$0 [--dry-run] <grep-like-pattern-in-osc-token-list>"
-    exit 1
-fi
-
 if test "$1" == "--dry-run"; then
     run=echo
     shift
 fi
 
-for i in $(osc token | grep $1 | sed 's,^.*string=",,g;s,".*$,,g'); do
-    $run osc token --trigger=$i
+if test -z "$1"; then
+    echo "$0 [--dry-run] <gawk regex for project names> <gawk regex for package names>"
+    exit 1
+fi
+
+for i in $(osc token | gawk '$1 ~ /ID/ { id = $3 } $1 ~ /String/ { str = $3 } $1 ~ /^Project/ && $3 ~ project { p=1 } $1 ~ /^Package/ && $3 ~ package { print str }' project=$1 package=$2); do
+    n=$($run osc token --trigger=$i | gawk '$0 ~ /status code/ { print $0 }')
+    echo "$i $n"
 done
